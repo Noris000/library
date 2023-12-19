@@ -1,78 +1,22 @@
-/* Reset some default styles to ensure consistency */
-body, table {
+body {
     margin: 0;
     padding: 0;
-    color:black;
-}
-
-/* Set a background color and text color for the body */
-body {
-    /* background-color: #f0f0f0; */
     color: #333;
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    padding: 20px;
-    background-image: url('https://cdn.edu.buncee.com/rackspace/bnc-assets/backgrounds/58b/e18/1488576911_BgLibrary030317_01.jpg'); /* Replace 'background.jpg' with your image file */
-    background-size: cover;
+    background-color: peachpuff;
+    background-size: contain;
     background-repeat: no-repeat;
 }
 
-/* Style the login button */
-.login-button {
-    display: block;
-    width: 100px;
-    margin: 20px; /* Adjust margin to position in the top left corner */
-    padding: 10px 20px;
-    text-align: center;
-    background-color: gray; /* Set the initial color to gray */
-    color: #fff;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.login-button:hover {
-    background-color: black;
-}
-
-/* Style the library title */
 h1 {
     font-size: 36px;
     margin-top: 20px;
     margin-bottom: 20px;
-    text-align: center; /* Center-align the h1 element */
+    text-align: center;
     color: white;
 }
 
-/* Style the table */
-table {
-    width: 75%;
-    margin: 20px auto;
-    border-collapse: collapse;
-}
-
-/* Style table headers */
-th {
-    background-color: gray;
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    color: white;
-    backdrop-filter: blur(3px);
-    background: rgba(111, 109, 109, 0.8);
-}
-
-/* Style table cells */
-td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    backdrop-filter: blur(3px);
-    background: rgba(255, 255, 255, 0.8);
-}
-
-/* Style the "Add to Cart" button */
 button {
     background-color: gray;
     color: #fff;
@@ -86,24 +30,19 @@ button:hover {
     background-color: black;
 }
 
-/* Style the cart icon */
 #cart-icon {
     position: fixed;
     top: 20px;
     right: 20px;
     cursor: pointer;
     font-size: 24px;
-    /* Set the initial color to gray */
     color: gray;
 }
 
-/* Style the cart icon when it has items */
 #cart-icon.has-items {
-    /* Change the color to black when there are items in the cart */
     color: black;
 }
 
-/* Style the cart popover */
 #cart-popover {
     position: fixed;
     top: 70px;
@@ -115,7 +54,6 @@ button:hover {
     display: none;
 }
 
-/* Style for the remove button */
 .remove-button {
     background-color: red;
     color: white;
@@ -128,24 +66,20 @@ button:hover {
     background-color: darkred;
 }
 
-/* Style for the book checkbox */
 .book-checkbox {
     margin-right: 5px;
 }
 
-/* Style the header container */
 .header-container {
     display: flex;
     align-items: center;
 }
 
-/* Style the cart icon */
 #cart-icon {
     font-size: 24px;
     color: white;
 }
 
-/* Style the role button */
 .role-button {
     width: 120px;
     padding: 10px 20px;
@@ -159,28 +93,60 @@ button:hover {
     margin-left: 10px;
     position: fixed;
     top: 20px;
-    right: 70px; /* Adjust the right position to move it next to the cart icon */
-    z-index: 1; /* Ensure the button appears above other elements */
+    right: 70px;
+    z-index: 1;
 }
 
 .role-button:hover {
     background-color: black;
 }
 
-/* Style the container div for buttons */
 .cart-buttons {
     display: flex;
-    justify-content: space-between; /* Make buttons appear next to each other with space in between */
-    margin-top: 10px; /* Add some margin for spacing */
+    justify-content: space-between;
+    margin-top: 10px;
 }
 
-/* Add a gap between the buttons */
+
 .cart-buttons button {
-    margin-right: 10px; /* Adjust the margin-right to control the gap size */
+    margin-right: 10px;
 }
 
-/* Style for sorting icons */
-table th a {
-    color: white !important; /* Set the color to white or any other desired color */
-    text-decoration: none !important; /* Remove underline */
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.card {
+    width: 300px;
+    height: auto;
+    margin: 10px;
+    padding: 15px;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: #333;
+    border-radius: 15px;
+    color: white;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+}
+
+.card img {
+    max-width: 100%;
+    width: 400px;
+    height: auto;
+}
+
+.btn-primary{
+    display: flex;
+    background-color: peachpuff;
+    text-decoration: none;
+    color: black;
+    padding: 10px;
+    width: 90px;
+    height: auto;
+    border-radius: 10px;
 }
