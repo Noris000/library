@@ -3,7 +3,7 @@
 session_start();
 
 // Establish a connection to your current database (library)
-$mysqli = new mysqli('sql307.infinityfree.com', 'if0_34873008', 'r96Nydo0VbF', 'if0_34873008_library');
+$mysqli = new mysqli("localhost", "root", "", "library");
 
 if ($mysqli->connect_error) {
     die("Connection to library database failed: " . $mysqli->connect_error);

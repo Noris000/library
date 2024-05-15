@@ -51,7 +51,7 @@ class DatabaseConnection {
 }
 
 // Create an instance of the DatabaseConnection class
-$dbConnection = new DatabaseConnection('sql307.infinityfree.com', 'if0_34873008', 'r96Nydo0VbF', 'if0_34873008_library');
+$dbConnection = new DatabaseConnection("localhost", "root", "", "library");
 
 if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     $bookId = $_GET['id'];

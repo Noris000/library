@@ -30,30 +30,6 @@ button:hover {
     background-color: black;
 }
 
-#cart-icon {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    cursor: pointer;
-    font-size: 24px;
-    color: gray;
-}
-
-#cart-icon.has-items {
-    color: black;
-}
-
-#cart-popover {
-    position: fixed;
-    top: 70px;
-    right: 20px;
-    border: 1px solid #000;
-    background-color: #fff;
-    padding: 10px;
-    max-width: 200px;
-    display: none;
-}
-
 .remove-button {
     background-color: red;
     color: white;
@@ -138,15 +114,4 @@ button:hover {
     max-width: 100%;
     width: 400px;
     height: auto;
-}
-
-.btn-primary{
-    display: flex;
-    background-color: peachpuff;
-    text-decoration: none;
-    color: black;
-    padding: 10px;
-    width: 90px;
-    height: auto;
-    border-radius: 10px;
 }

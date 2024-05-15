@@ -5,7 +5,7 @@ class LibraryApp {
     private $mysqli;
 
     public function __construct() {
-        $this->mysqli = new mysqli('sql307.infinityfree.com', 'if0_34873008', 'r96Nydo0VbF', 'if0_34873008_library');
+        $this->mysqli = new mysqli("localhost", "root", "", "library");
 
         if ($this->mysqli->connect_error) {
             die("Connection failed: " . $this->mysqli->connect_error);
@@ -197,12 +197,5 @@ $borrowed_books_result = $libraryApp->getUserBorrowedBooks();
     $libraryApp->closeConnection();
     ?>
 </div>
-<script>
-    // Remove the sort parameters from the URL
-    if (window.history.replaceState) {
-        const urlWithoutSort = window.location.href.replace(/[?&]sort=[^&]*/g, '').replace(/[?&]order=[^&]*/g, '');
-        window.history.replaceState({path: urlWithoutSort}, '', urlWithoutSort);
-    }
-</script>
 </body>
 </html>

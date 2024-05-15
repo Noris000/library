@@ -24,7 +24,7 @@ if ($data = json_decode($jsonData, true)) {
 
     if (!empty($checkedBooks)) {
         // Connect to your database
-        $conn = new mysqli('sql307.infinityfree.com', 'if0_34873008', 'r96Nydo0VbF', 'if0_34873008_library');
+        $conn = new mysqli('localhost', 'root', '', 'library');
 
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
