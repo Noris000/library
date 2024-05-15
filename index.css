@@ -17,6 +17,11 @@ h1 {
     color: white;
 }
 
+h2{
+    font-size: 20px;
+    color: white;
+}
+
 button {
     background-color: gray;
     color: #fff;
@@ -28,64 +33,6 @@ button {
 
 button:hover {
     background-color: black;
-}
-
-.remove-button {
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.remove-button:hover {
-    background-color: darkred;
-}
-
-.book-checkbox {
-    margin-right: 5px;
-}
-
-.header-container {
-    display: flex;
-    align-items: center;
-}
-
-#cart-icon {
-    font-size: 24px;
-    color: white;
-}
-
-.role-button {
-    width: 120px;
-    padding: 10px 20px;
-    text-align: center;
-    background-color: gray;
-    color: #fff;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 10px;
-    position: fixed;
-    top: 20px;
-    right: 70px;
-    z-index: 1;
-}
-
-.role-button:hover {
-    background-color: black;
-}
-
-.cart-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-
-.cart-buttons button {
-    margin-right: 10px;
 }
 
 .card-container {
@@ -107,7 +54,7 @@ button:hover {
 }
 
 .card:hover {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .card img {

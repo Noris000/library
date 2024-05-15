@@ -62,7 +62,7 @@ include 'navbar.php';
             card.innerHTML = `
                 <img src="${book.bookImage}" alt="Book Cover">
                 <div class="card-body">
-                    <h5 class="card-title">${book.bookTitle}</h5>
+                    <h2 class="card-title">${book.bookTitle}</h2>
                     <p class="card-text"><strong>Author:</strong> ${book.bookAuthor}</p>
                     <p class="card-text">${book.bookDescription}</p>
                     <p class="card-text"><strong>Publisher:</strong> ${book.bookPublisher}</p>

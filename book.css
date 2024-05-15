@@ -9,12 +9,12 @@ body {
     background-repeat: no-repeat;
 }
 
-h1 {
-    font-size: 36px;
+h2 {
+    font-size: 30px;
     margin-top: 20px;
     margin-bottom: 20px;
     text-align: center;
-    color: white;
+    color: black;
 }
 
 button {
@@ -28,64 +28,6 @@ button {
 
 button:hover {
     background-color: black;
-}
-
-.remove-button {
-    background-color: red;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.remove-button:hover {
-    background-color: darkred;
-}
-
-.book-checkbox {
-    margin-right: 5px;
-}
-
-.header-container {
-    display: flex;
-    align-items: center;
-}
-
-#cart-icon {
-    font-size: 24px;
-    color: white;
-}
-
-.role-button {
-    width: 120px;
-    padding: 10px 20px;
-    text-align: center;
-    background-color: gray;
-    color: #fff;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 10px;
-    position: fixed;
-    top: 20px;
-    right: 70px;
-    z-index: 1;
-}
-
-.role-button:hover {
-    background-color: black;
-}
-
-.cart-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
-
-.cart-buttons button {
-    margin-right: 10px;
 }
 
 .container {
@@ -114,22 +56,6 @@ button:hover {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.book-info img {
-    width: 300px;
-    height: auto;
-    margin-bottom: 20px;
-    border-radius: 10px;
-}
-
-.book-info h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.book-info p {
-    margin-bottom: 10px;
 }
 
 .book-plot h2 {
