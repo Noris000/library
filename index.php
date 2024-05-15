@@ -15,90 +15,84 @@ include 'navbar.php';
     <div class="card-container" id="cardContainer"></div>
 
     <script>
-        function fetchBookData(page) {
-            return fetch(`https://books-api7.p.rapidapi.com/books?p=${page}`, {
+        async function fetchRandomBook() {
+            // Fetch all book data
+            const bookData = await fetchBookData();
+
+            // Randomly select a book from the fetched data
+            const randomIndex = Math.floor(Math.random() * bookData.length);
+            const randomBook = bookData[randomIndex];
+
+            // Redirect to book.php with the random book's details as query parameters
+            const queryString = new URLSearchParams({
+                title: randomBook.bookTitle,
+                author: randomBook.bookAuthor,
+                description: randomBook.bookDescription,
+                publisher: randomBook.bookPublisher,
+                url: randomBook.amazonBookUrl,
+                book_id: randomBook.bookIsbn
+            }).toString();
+            window.location.href = `book.php?${queryString}`;
+        }
+
+        async function fetchBookData() {
+            const url = 'https://all-books-api.p.rapidapi.com/getBooks';
+            const options = {
                 method: 'GET',
                 headers: {
-                    'X-RapidAPI-Host': 'books-api7.p.rapidapi.com',
                     'X-RapidAPI-Key': '7ce71ed5a7msha4203985a4cda5bp174b0ajsnb14b7bd8b868',
-                },
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
+                    'X-RapidAPI-Host': 'all-books-api.p.rapidapi.com'
+                }
+            };
+
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
                 return data;
-            })
-            .catch(error => console.error('Error fetching data:', error));
+            } catch (error) {
+                console.error(error);
+            }
         }
 
         function appendCard(book) {
             const cardContainer = document.getElementById('cardContainer');
-
-            if (!book) {
-                if (cardContainer.querySelectorAll('.card').length === 0) {
-                    const noMoreBooksMessage = document.createElement('p');
-                    noMoreBooksMessage.innerText = 'No more books available';
-                    cardContainer.appendChild(noMoreBooksMessage);
-                }
-                return;
-            }
-
             const card = document.createElement('div');
             card.className = 'card';
 
-            card.addEventListener('click', () => handleBookClick(book));
-
             card.innerHTML = `
-                <img src="${book.cover}" alt="Book Cover">
+                <img src="${book.bookImage}" alt="Book Cover">
                 <div class="card-body">
-                    <h5 class="card-title">${book.title}</h5>
-                    <p class="card-text"><strong>Author:</strong> ${book.author.first_name} ${book.author.last_name}</p>
-                    <p class="card-text"><strong>Pages:</strong> ${book.pages}</p>
-                    <p class="card-text"><strong>Genres:</strong> ${book.genres.join(', ')}</p>
-                    <a href="${book.url}" class="btn btn-primary">Buy the book</a>
+                    <h5 class="card-title">${book.bookTitle}</h5>
+                    <p class="card-text"><strong>Author:</strong> ${book.bookAuthor}</p>
+                    <p class="card-text">${book.bookDescription}</p>
+                    <p class="card-text"><strong>Publisher:</strong> ${book.bookPublisher}</p>
+                    <a href="${book.amazonBookUrl}" class="btn btn-primary">Buy on Amazon</a>
                 </div>
             `;
 
             cardContainer.appendChild(card);
+
+            // Add click event listener
+            card.addEventListener('click', () => handleBookClick(book));
         }
 
         function handleBookClick(book) {
-            window.location.href = `book.php?title=${encodeURIComponent(book.title)}&author=${encodeURIComponent(book.author.first_name + ' ' + book.author.last_name)}&pages=${book.pages}&genres=${encodeURIComponent(book.genres.join(','))}&cover=${encodeURIComponent(book.cover)}&url=${encodeURIComponent(book.url)}&plot=${encodeURIComponent(book.plot)}&rating=${book.rating}`;
+            const queryString = new URLSearchParams({
+                title: book.bookTitle,
+                author: book.bookAuthor,
+                description: book.bookDescription,
+                publisher: book.bookPublisher,
+                url: book.amazonBookUrl,
+                book_id: book.bookIsbn
+            }).toString();
+            window.location.href = `book.php?${queryString}`;
         }
 
-        function handleScroll() {
-            const scrollThreshold = 200;
-            const scrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - scrollThreshold;
-
-            if (scrolledToBottom) {
-                currentPage++;
-                fetchBookData(currentPage)
-                    .then(data => {
-                        if (data && data.length > 0) {
-                            data.forEach(book => {
-                                appendCard(book);
-                            });
-                        } else {
-                            appendCard();
-                        }
-                    });
-            }
-        }
-
-        window.addEventListener('scroll', handleScroll);
-
-        let currentPage = 1;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchBookData(currentPage)
-                .then(data => {
-                    data.forEach(book => {
-                        appendCard(book);
-                    });
-                });
+        document.addEventListener('DOMContentLoaded', async () => {
+            const bookData = await fetchBookData();
+            bookData.forEach(book => {
+                appendCard(book);
+            });
         });
     </script>
 </body>

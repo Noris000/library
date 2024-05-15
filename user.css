@@ -1,0 +1,120 @@
+/* Reset some default styles to ensure consistency */
+body, h1, h2, table, form {
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+/* Set a background color and text color for the body */
+body {
+    color: #333;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* Style the user profile title */
+h1 {
+    font-size: 36px;
+    margin-top: 20px;
+    text-align: center; /* Center-align the h1 element */
+}
+
+/* Style the "Borrowed Books" heading */
+h2 {
+    font-size: 24px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center; /* Center-align the h2 element */
+}
+
+/* Style the table */
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+/* Style table headers */
+th {
+    background-color: gray;
+    color:white;
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+    backdrop-filter: blur(3px);
+    background: rgba(111, 109, 109, 0.8);
+}
+
+/* Style table cells */
+td {
+    padding: 8px;
+    color:black;
+    text-align: center; /* Center-align the text within the table cells */
+    border-bottom: 1px solid #ddd;
+    backdrop-filter: blur(3px);
+    background: rgba(255, 255, 255, 0.8);
+}
+
+/* Add this to your CSS */
+.red-row {
+    background-color: red;
+    color: white; /* You can adjust the text color as needed for better contrast */
+}
+
+/* Style the return button */
+form {
+    text-align: left; /* Align the button to the left within the form */
+}
+
+button {
+    background-color: gray;
+    color: #fff;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    margin: 0 auto;
+    display: block;
+}
+
+button:hover {
+    background-color: black;
+}
+
+/* Style for the main button */
+#mainButton {
+    position: fixed;
+    top: 10px; /* Adjust the top position as needed */
+    left: 10px; /* Adjust the left position as needed */
+    z-index: 9999; /* Ensures the button is above other content */
+    background-color: gray;
+    color: #fff;
+    border: none;
+    padding: 15px 20px;
+    cursor: pointer;
+}
+
+/* Hover effect */
+#mainButton:hover {
+    background-color: #000; /* Change background color to black on hover */
+}
+
+table th a {
+    color: white !important; /* Set the color to white or any other desired color */
+    text-decoration: none !important; /* Remove underline */
+}
+
+/* Add the blurred background to the container */
+.background-container {
+    background-image: url('https://cdn.edu.buncee.com/rackspace/bnc-assets/backgrounds/58b/e18/1488576911_BgLibrary030317_01.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    backdrop-filter: blur(5px); /* Adjust the blur value as needed */
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+}
