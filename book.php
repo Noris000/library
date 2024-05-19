@@ -1,4 +1,7 @@
 <?php
+// Start output buffering to prevent any output before calling header
+ob_start();
+
 // Include necessary files and start session
 include 'navbar.php';
 session_start();
@@ -15,77 +18,53 @@ function fetchComments($parent_id = NULL, $level = 0) {
     $sql = "SELECT * FROM review WHERE reply = '$parent_id'";
     $result = $conn->query($sql);
 
-    if ($result) {
-        if ($result->num_rows > 0) {
-            while ($row = $result->fetch_assoc()) {
-                echo "<div class='comment' style='margin-left: 2em;'>";
-                if ($row['deleted'] == 1) {
-                    echo "<p>Deleted Comment</p>";
-                } else {
-                    echo "<p>{$row['review']}</p>";
-                }
-                echo "<button class='reply-btn' onclick='toggleReplyBox({$row['id']})'>Reply</button>";
-                if ($row['deleted'] != 1) {
-                    echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
-                    echo "<input type='hidden' name='delete_comment' value='{$row['id']}'>";
-                    echo "<input type='submit' value='Delete'>";
-                    echo "</form>";
-                }
-                echo "<div class='reply-box' id='replyBox_{$row['id']}'>";
-                echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
-                echo "<input type='hidden' name='book_id' value='{$row['book_id']}'>";
-                echo "<input type='hidden' name='comment_id' value='{$row['id']}'>";
-                echo "<textarea name='reply' rows='2' cols='30'></textarea><br>";
-                echo "<input type='submit' value='Submit Reply'>";
-                echo "</form>";
-                echo "</div>";
-
-                // Recursively fetch replies
-                fetchComments($row['id'], $level + 1);
-
-                echo "</div>";
-            }
-        }
-    } else {
-        echo "Error: " . $conn->error; // Output any SQL errors
-    }
+    return $result; // Return the result of the query
 }
 
-// Function to delete comment and its replies recursively
-function deleteComments($comment_id) {
-    global $conn;
+// Check if a comment deletion request is made
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_comment'])) {
+    $comment_id = $_POST['delete_comment'];
 
-    // Sanitize the comment_id to prevent SQL injection
-    $comment_id = $conn->real_escape_string($comment_id);
+    // Function to delete comment and its replies recursively
+    function deleteComments($comment_id) {
+        global $conn;
 
-    // Retrieve comments with the given parent_id
-    $sql = "SELECT id FROM review WHERE reply = '$comment_id'";
-    $result = $conn->query($sql);
+        // Sanitize the comment_id to prevent SQL injection
+        $comment_id = $conn->real_escape_string($comment_id);
 
-    if ($result) {
-        if ($result->num_rows > 0) {
-            // Recursively delete child comments
-            while ($row = $result->fetch_assoc()) {
-                deleteComments($row['id']);
+        // Retrieve comments with the given parent_id
+        $sql = "SELECT id FROM review WHERE reply = '$comment_id'";
+        $result = $conn->query($sql);
+
+        if ($result) {
+            if ($result->num_rows > 0) {
+                // Recursively delete child comments
+                while ($row = $result->fetch_assoc()) {
+                    deleteComments($row['id']);
+                }
             }
+        } else {
+            echo "Error fetching comments: " . $conn->error;
+            return;
         }
-    } else {
-        echo "Error fetching comments: " . $conn->error;
-        return;
+
+        // Delete the comment
+        $sql_delete = "DELETE FROM review WHERE id = '$comment_id'";
+        if ($conn->query($sql_delete) === TRUE) {
+            // Redirect to the same page to prevent resubmission on page refresh
+            header("Location: {$_SERVER['PHP_SELF']}");
+            exit(); // Stop further execution
+        } else {
+            echo "Error deleting comment: " . $conn->error;
+        }
     }
 
-    // Delete the comment and its replies
-    $sql_delete = "DELETE FROM review WHERE id = '$comment_id' OR reply = '$comment_id'";
-    if ($conn->query($sql_delete) === TRUE) {
-        echo "Comment(s) deleted successfully";
-    } else {
-        echo "Error deleting comment(s): " . $conn->error;
-    }
+    // Delete the comment and its replies recursively
+    deleteComments($comment_id);
 }
-
 
 // Check if the review form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['review'])) {
     // Check if user is logged in
     if (!isset($_SESSION['username'])) {
         // Display a message or prompt the user to log in through the pop-up
@@ -98,10 +77,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_SESSION['username'];
     $review = $_POST['review'] ?? '';
 
+    // Check if the review field is empty
+    if(empty($review)) {
+        echo "Error: Review field is empty";
+        exit(); // Stop further execution
+    }
+
     // Insert the review into the database
     $sql = "INSERT INTO review (book_id, username, review) VALUES ('$book_id', '$username', '$review')";
     if ($conn->query($sql) === TRUE) {
-        echo "Review submitted successfully";
+        // Redirect to the same page to prevent resubmission on page refresh
+        header("Location: {$_SERVER['PHP_SELF']}");
+        exit(); // Stop further execution
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
@@ -118,11 +105,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
     // Insert the reply into the database
     $sql = "INSERT INTO review (book_id, username, review, reply) VALUES ('$book_id', '$username', '$reply', '$comment_id')";
     if ($conn->query($sql) === TRUE) {
-        echo "Reply submitted successfully";
+        // Redirect to the same page to prevent resubmission on page refresh
+        header("Location: {$_SERVER['PHP_SELF']}");
+        exit(); // Stop further execution
     } else {
         echo "Error: " . $sql . "<br>" . $conn->error;
     }
 }
+
+// Flush the output buffer and turn off output buffering
+ob_end_flush();
 ?>
 
 <!DOCTYPE html>
@@ -130,11 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
 <head>
     <title>Book Details</title>
     <link rel="stylesheet" type="text/css" href="book.css">
-    <style>
-        .reply-box {
-            display: none;
-        }
-    </style>
+    <script src="random.js"></script>
 </head>
 <body>
     <div class="container">
@@ -156,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
         <div class="container-plot">
             <div class="book-plot">
                 <!-- Add form for submitting reviews -->
-                <h2>Write a Review</h2>
+                <h2>Write a Review                </h2>
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                     <input type="hidden" name="book_id" value="<?php echo isset($_GET['book_id']) ? $_GET['book_id'] : ''; ?>">
                     <?php
@@ -175,10 +163,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
                 </form>
 
                 <!-- Comments Section -->
-                <?php
-                // Fetch main comments
-                fetchComments();
-                ?>
+                <div class="comments-container">
+                    <?php
+                    // Fetch main comments
+                    $result = fetchComments(); // Get the result of the fetchComments function
+
+                    // Check if there are comments
+                    if ($result && $result->num_rows > 0) {
+                        // If there are comments, display them
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<div class='comment' style='margin-left: 2em;'>";
+                            if ($row['deleted'] == 1) {
+                                echo "<p>Deleted Comment</p>";
+                            } else {
+                                echo "<p>{$row['review']}</p>";
+                            }
+                            echo "<button class='reply-btn' onclick='toggleReplyBox({$row['id']})'>Reply</button>";
+                            if ($row['deleted'] != 1) {
+                                echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
+                                echo "<input type='hidden' name='delete_comment' value='{$row['id']}'>";
+                                echo "<input type='submit' value='Delete'>";
+                                echo "</form>";
+                            }
+                            echo "<div class='reply-box' id='replyBox_{$row['id']}'>";
+                            echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
+                            echo "<input type='hidden' name='book_id' value='{$row['book_id']}'>";
+                            echo "<input type='hidden' name='comment_id' value='{$row['id']}'>";
+                            echo "<textarea name='reply' rows='2' cols='30'></textarea><br>";
+                            echo "<input type='submit' value='Submit Reply'>";
+                            echo "</form>";
+                            echo "</div>";
+
+                            // Recursively fetch replies
+                            fetchComments($row['id'], $level + 1);
+
+                            echo "</div>";
+                        }
+                    } else {
+                        // If no comments, display a message
+                        echo "<div class='no-comments'>No comments yet.</div>";
+                    }
+                    ?>
+                </div>
             </div>
         </div>
     </div>
@@ -195,3 +221,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
     </script>
 </body>
 </html>
+

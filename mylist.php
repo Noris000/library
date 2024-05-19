@@ -49,6 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['remove'])) {
 <html>
 <head>
 <link rel="stylesheet" type="text/css" href="mylist.css">
+<script src="random.js"></script>
     <title>Book List</title>
 </head>
 <body>

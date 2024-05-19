@@ -123,3 +123,19 @@ p {
     text-align: left;
     text-rendering: optimizeLegibility;
 }
+
+.popup {
+    display: none;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+    border-radius: 5px;
+}
+.popup.show {
+    display: block;
+}

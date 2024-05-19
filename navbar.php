@@ -55,6 +55,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login_submit'])) {
                 // Set login success session variable
                 $_SESSION["login_success"] = true;
 
+                // Set the welcome message flag to false to ensure it shows after the redirection
+                unset($_SESSION['login_welcome_message_shown']);
+
                 // Redirect user to index page
                 header("location: index.php");
                 exit();
@@ -67,9 +70,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login_submit'])) {
 
     // Close statement
     $stmt->close();
-
-    // Reopen the login modal with error message if login failed
-    //echo "<script>showLoginModal('$loginMessage');</script>";
 }
 
 // Handle user registration
@@ -117,6 +117,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
             // Close statement
             $stmt->close();
 
+            // Set the welcome message flag to false to ensure it shows after the redirection
+            unset($_SESSION['login_welcome_message_shown']);
+
             // Redirect user to index page
             header("location: index.php");
             exit();
@@ -124,12 +127,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
             // Registration failed, set error message
             $registrationMessage = "Error occurred during registration. Please try again.";
         }
-        if( $usernameError || $passwordError || $emailError)
-            $errors = true;
     }
 
-    // Reopen the register modal with error messages if registration failed
-    //echo "<script>showRegisterModal('$emailError', '$usernameError', '$passwordError');</script>";
+    // Close statement
+    $stmt->close();
 }
 
 // Display the welcome message if it's set and the current page is the home page
@@ -144,6 +145,20 @@ if (!empty($loginMessage) && basename($_SERVER['PHP_SELF']) == 'index.php') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="navbar.css">
+    <script>
+        // Function to show pop-up message
+        function showPopupMessage(message) {
+            var popup = document.createElement('div');
+            popup.innerHTML = message;
+            popup.className = "welcome-popup";
+            document.body.appendChild(popup);
+
+            // Hide the popup after 3 seconds (adjust the time as needed)
+            setTimeout(function() {
+                popup.style.display = 'none';
+            }, 3000); // 3000 milliseconds = 3 seconds
+        }
+    </script>
 </head>
 <body>
 
@@ -257,35 +272,6 @@ if (!empty($loginMessage) && basename($_SERVER['PHP_SELF']) == 'index.php') {
 </div>
 
 <script>
-    // Function to show pop-up message
-    function showPopupMessage(message) {
-        var popup = document.createElement('div');
-        popup.innerHTML = message;
-        popup.className = "welcome-popup";
-        document.body.appendChild(popup);
-
-        // Hide the popup after 3 seconds (adjust the time as needed)
-        setTimeout(function() {
-            popup.style.display = 'none';
-        }, 3000); // 3000 milliseconds = 3 seconds
-    }
-
-    // Function to show the welcome message popup
-    function showWelcomeMessage() {
-        var welcomeMessage = document.createElement('div');
-        welcomeMessage.innerHTML = "Welcome, <?= isset($_SESSION['username']) ? $_SESSION['username'] : 'Guest' ?>!";
-        welcomeMessage.className = "welcome-popup";
-        document.body.appendChild(welcomeMessage);
-
-        // Hide the popup after 3 seconds (adjust the time as needed)
-        setTimeout(function() {
-            welcomeMessage.style.display = 'none';
-        }, 3000); // 3000 milliseconds = 3 seconds
-    }
-
-    // Call the function to show the welcome message popup
-    showWelcomeMessage();
-
     function toggleMenu() {
         var navList = document.querySelector('.nav-list');
         navList.classList.toggle('active');
@@ -355,6 +341,11 @@ if (!empty($loginMessage) && basename($_SERVER['PHP_SELF']) == 'index.php') {
         var suggestionsContainer = document.getElementById('emailSuggestions');
         suggestionsContainer.classList.toggle('active');
     }
+
+    // Call the function to show the welcome message popup if there is a login message
+    <?php if (!empty($loginMessage)) : ?>
+    showPopupMessage("<?= $loginMessage ?>");
+    <?php endif; ?>
 </script>
 
 </body>
