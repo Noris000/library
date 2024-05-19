@@ -61,9 +61,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login_submit'])) {
                 // Redirect user to index page
                 header("location: index.php");
                 exit();
-            } else {
-                // Display error message if password is not valid
-                $loginMessage = "Username or password is incorrect.";
             }
         }
     }

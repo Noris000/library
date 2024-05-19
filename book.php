@@ -18,6 +18,36 @@ function fetchComments($parent_id = NULL, $level = 0) {
     $sql = "SELECT * FROM review WHERE reply = '$parent_id'";
     $result = $conn->query($sql);
 
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "<div class='comment' style='margin-left: " . ($level * 2) . "em;'>";
+            if ($row['deleted'] == 1) {
+                echo "<p>Deleted Comment</p>";
+            } else {
+                echo "<p>{$row['review']}</p>";
+            }
+            echo "<button class='reply-btn' onclick='toggleReplyBox({$row['id']})'>Reply</button>";
+            if ($row['deleted'] != 1) {
+                echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
+                echo "<input type='hidden' name='delete_comment' value='{$row['id']}'>";
+                echo "<input type='submit' value='Delete'>";
+                echo "</form>";
+            }
+            echo "<div class='reply-box' id='replyBox_{$row['id']}'>";
+            echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
+            echo "<input type='hidden' name='book_id' value='{$row['book_id']}'>";
+            echo "<input type='hidden' name='comment_id' value='{$row['id']}'>";
+            echo "<textarea name='reply' rows='2' cols='30'></textarea><br>";
+            echo "<input type='submit' value='Submit Reply'>";
+            echo "</form>";
+            echo "</div>";
+
+            // Recursively fetch replies
+            fetchComments($row['id'], $level + 1);
+
+            echo "</div>";
+        }
+    }
     return $result; // Return the result of the query
 }
 
@@ -116,7 +146,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
 // Flush the output buffer and turn off output buffering
 ob_end_flush();
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -136,15 +165,17 @@ ob_end_flush();
                 echo "<p><strong>Author:</strong> {$_GET['author']}</p>";
                 echo "<p><strong>Description:</strong> {$_GET['description']}</p>";
                 echo "<p><strong>Publisher:</strong> {$_GET['publisher']}</p>";
+                echo "<div class='button-container'>";
                 echo "<button id='addToList'>Add to List</button>";
                 echo "<button onclick=\"window.location.href='" . (isset($_GET['url']) ? $_GET['url'] : '') . "'\">Buy Here</button>";
+                echo "</div>";
             }
-            ?>
+        ?>
         </div>
         <div class="container-plot">
             <div class="book-plot">
                 <!-- Add form for submitting reviews -->
-                <h2>Write a Review                </h2>
+                <h2>Write a Review</h2>
                 <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
                     <input type="hidden" name="book_id" value="<?php echo isset($_GET['book_id']) ? $_GET['book_id'] : ''; ?>">
                     <?php
@@ -195,7 +226,7 @@ ob_end_flush();
                             echo "</div>";
 
                             // Recursively fetch replies
-                            fetchComments($row['id'], $level + 1);
+                            fetchComments($row['id'], 1);
 
                             echo "</div>";
                         }
@@ -210,6 +241,23 @@ ob_end_flush();
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const addToListButton = document.getElementById('addToList');
+
+            addToListButton.addEventListener('click', () => {
+                // Check if the user is logged in (you might need to implement a more secure check)
+                const isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
+
+                if (isLoggedIn) {
+                    // Add the book to the list (you can add your logic here)
+                    alert('Book added to your list!');
+                } else {
+                    // Display an alert or redirect to the login page
+                    alert('Please login to add the book to your list.');
+                }
+            });
+        });
+
         function toggleReplyBox(commentId) {
             var replyBox = document.getElementById('replyBox_' + commentId);
             if (replyBox.style.display === 'none') {
@@ -221,4 +269,3 @@ ob_end_flush();
     </script>
 </body>
 </html>
-
