@@ -176,6 +176,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
     }
 }
 
+// Check if the add-to-list form is submitted
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['status']) && isset($_POST['score'])) {
+    $user_id = $_SESSION['user_id']; // Assuming the user's ID is stored in the session
+    $book_id = $_POST['book_id'];
+    $title = $_POST['title'];
+    $author = $_POST['author'];
+    $rating = $_POST['score'];
+    $status = $_POST['status'];
+
+    // Sanitize inputs to prevent SQL injection
+    $user_id = $conn->real_escape_string($user_id);
+    $book_id = $conn->real_escape_string($book_id);
+    $title = $conn->real_escape_string($title);
+    $author = $conn->real_escape_string($author);
+    $rating = $conn->real_escape_string($rating);
+    $status = $conn->real_escape_string($status);
+
+    // Insert the data into the 'list' table
+    $sql = "INSERT INTO list (user_id, book_id, title, author, rating, status) 
+            VALUES ('$user_id', '$book_id', '$title', '$author', '$rating', '$status')";
+    if ($conn->query($sql) === TRUE) {
+        // Redirect back to the same page to prevent form resubmission
+        header("Location: " . $_SERVER['PHP_SELF'] . "?" . http_build_query($_GET));
+        exit();
+    } else {
+        // Error inserting data
+        echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+}
+
 // Flush the output buffer and turn off output buffering
 ob_end_flush();
 ?>
@@ -192,14 +222,14 @@ ob_end_flush();
         <?php
             // Check if book details are set in the URL
             if (isset($_GET['title'])) {
-                // Output
+                // Output book details
                 echo "<h2>{$_GET['title']}</h2>";
                 echo "<img src='{$_GET['cover']}' alt='Book Cover'>";
                 echo "<p><strong>Author:</strong> {$_GET['author']}</p>";
                 echo "<p><strong>Description:</strong> {$_GET['description']}</p>";
                 echo "<p><strong>Publisher:</strong> {$_GET['publisher']}</p>";
                 echo "<div class='button-container'>";
-                echo "<button id='addToList'>Add to List</button>";
+                echo "<button id='addToList' onclick='openPopup()'>Add to List</button>";
                 echo "<button onclick=\"window.location.href='" . (isset($_GET['url']) ? $_GET['url'] : '') . "'\">Buy Here</button>";
                 echo "</div>";
             }
@@ -238,74 +268,54 @@ ob_end_flush();
         </div>
     </div>
 
-   <!-- Pop-up Modal for Add to List -->
-<div class="overlay" id="overlay"></div>
-<div class="popup" id="popup">
-    <h2>Add to List</h2>
-    <form id="addToListForm" action="add_to_list.php" method="post">
-        <input type="hidden" name="book_id" value="<?php echo htmlspecialchars($_GET['book_id']); ?>">
-        <input type="hidden" name="title" value="<?php echo htmlspecialchars($_GET['title']); ?>">
-        <input type="hidden" name="author" value="<?php echo htmlspecialchars($_GET['author']); ?>">
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-            <option value="reading">Reading</option>
-            <option value="completed">Completed</option>
-            <option value="plan_to_read">Plan to Read</option>
-            <option value="on_hold">On-Hold</option>
-            <option value="dropped">Dropped</option>
-        </select>
-        <br><br>
-        <label for="score">Score:</label>
-        <select id="score" name="score">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
-        </select>
-        <br><br>
-        <div class="button-container">
-            <button type="button" onclick="closePopup()">Cancel</button>
-            <button type="submit">Submit</button>
-        </div>
-    </form>
-</div>
+    <!-- Pop-up Modal for Add to List -->
+    <div class="overlay" id="overlay"></div>
+    <div class="popup" id="popup">
+        <h2>Add to List</h2>
+        <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . '?' . http_build_query($_GET); ?>" method="post">
+            <input type="hidden" name="book_id" value="<?php echo htmlspecialchars($_GET['book_id']); ?>">
+            <input type="hidden" name="title" value="<?php echo htmlspecialchars($_GET['title']); ?>">
+            <input type="hidden" name="author" value="<?php echo htmlspecialchars($_GET['author']); ?>">
+            <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="Reading">Reading</option>
+                <option value="Completed">Completed</option>
+                <option value="Plan To Read">Plan to Read</option>
+                <option value="On-Hold">On-Hold</option>
+                <option value="Dropped">Dropped</option>
+            </select>
+            <br><br>
+            <label for="score">Score:</label>
+            <select id="score" name="score">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+            </select>
+            <br><br>
+            <div class="button-container">
+                <button type="button" onclick="closePopup()">Cancel</button>
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-    const addToListButton = document.getElementById('addToList');
-    const overlay = document.getElementById('overlay');
-    const popup = document.getElementById('popup');
-
-    addToListButton.addEventListener('click', () => {
-        // Check if the user is logged in
-        const isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
-
-        if (isLoggedIn) {
-            // Show the popup
-            overlay.style.display = 'block';
-            popup.style.display = 'block';
-        } else {
-            // Alert the user to log in
-            alert('Please login to add the book to your list.');
+        function openPopup() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('popup').style.display = 'block';
         }
-    });
 
-    overlay.addEventListener('click', closePopup);
-});
-
-function closePopup() {
-    const overlay = document.getElementById('overlay');
-    const popup = document.getElementById('popup');
-
-    overlay.style.display = 'none';
-    popup.style.display = 'none';
-}
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('popup').style.display = 'none';
+        }
 
         function toggleReplyBox(commentId) {
             var isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;

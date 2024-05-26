@@ -40,6 +40,8 @@ async function fetchBookData() {
 
 function appendCard(book) {
     const cardContainer = document.getElementById('cardContainer');
+    if (!cardContainer) return; // Check if cardContainer exists
+
     const card = document.createElement('div');
     card.className = 'card';
 
