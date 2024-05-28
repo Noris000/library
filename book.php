@@ -7,6 +7,32 @@ include 'navbar.php';
 session_start();
 include 'db.php';
 
+// Function to retrieve the rating for a book from the database
+function getBookRating($book_id) {
+    global $conn;
+
+    // Sanitize input to prevent SQL injection
+    $book_id = $conn->real_escape_string($book_id);
+
+    // Query to retrieve ratings for the book
+    $sql = "SELECT rating FROM list WHERE book_id = '$book_id'";
+    $result = $conn->query($sql);
+
+    if ($result && $result->num_rows > 0) {
+        // If there are ratings, calculate the average
+        $totalRating = 0;
+        $ratingCount = $result->num_rows;
+        while ($row = $result->fetch_assoc()) {
+            $totalRating += $row['rating'];
+        }
+        $averageRating = $totalRating / $ratingCount;
+        return $averageRating;
+    } else {
+        // If no ratings are found, return "No Rating Yet"
+        return "No Rating Yet";
+    }
+}
+
 // Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -30,17 +56,29 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
         // Display comments
         while ($row = $result->fetch_assoc()) {
             echo "<div class='comment' style='margin-left: " . ($level * 2) . "em;'>";
+
             if ($row['deleted'] == 1) {
                 echo "<p class='deleted-comment'>Deleted Comment</p>";
                 echo "<p class='timestamp'>{$row['created_at']}</p>";
             } else {
-                echo "<p class='comment-details'><strong>{$row['username']}</strong> <span class='timestamp'>{$row['created_at']}</span></p>";
+                // Display "Deleted User" if the user doesn't exist anymore
+                $username = $row['username'];
+                $userExists = false;
+
+                // Check if the user exists
+                $userCheckSql = "SELECT COUNT(*) as user_count FROM users WHERE username = '$username'";
+                $userCheckResult = $conn->query($userCheckSql);
+                if ($userCheckResult) {
+                    $userExists = $userCheckResult->fetch_assoc()['user_count'] > 0;
+                }
+
+                echo "<p class='comment-details'><strong>" . ($userExists ? $username : "Deleted User") . "</strong> <span class='timestamp'>{$row['created_at']}</span></p>";
                 echo "<p class='comment-text'>{$row['review']}</p>";
             
                 // Display reply button only if the comment is not deleted
                 echo "<button class='reply-btn' onclick='toggleReplyBox({$row['id']})'>Reply</button>";
             }
-            
+
             // Check if there are replies before showing the toggle button
             $replyCheckSql = "SELECT COUNT(*) as reply_count FROM review WHERE reply = '{$row['id']}'";
             $replyCheckResult = $conn->query($replyCheckSql);
@@ -49,7 +87,7 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
             if ($replyCount > 0) {
                 echo "<button class='toggle-replies-btn' onclick='toggleReplies({$row['id']})'>Replies ({$replyCount})</button>";
             }
-            
+
             // Display three dots icon and dropdown for edit/delete options
             if ($row['deleted'] != 1) {
                 echo "<div class='options-container'>";
@@ -60,7 +98,7 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
                 echo "</div>";
                 echo "</div>";
             }
-            
+
             // Display delete button only if the comment is not deleted and belongs to the logged-in user
             if ($row['deleted'] != 1 && isset($_SESSION['username']) && $_SESSION['username'] == $row['username']) {
                 echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
@@ -74,7 +112,7 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
                 echo "<input type='submit' class='delete-btn' value='Delete'>";
                 echo "</form>";
             }
-            
+
             // Display reply box if the user is logged in and the comment is not deleted
             if ($row['deleted'] != 1 && isset($_SESSION['username'])) {
                 echo "<div class='reply-box' id='replyBox_{$row['id']}' style='display: none;'>";
@@ -96,12 +134,12 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
                 echo "<p>Please login to reply.</p>";
                 echo "</div>";
             }
-            
+
             echo "<div class='replies-container' id='repliesContainer_{$row['id']}' style='display: none;'>";
             // Recursively fetch replies
             fetchComments($book_id, $row['id'], $level + 1, $sort);
             echo "</div>";
-            
+
             echo "</div>";
         }
     } elseif ($parent_id === NULL) {
@@ -109,6 +147,7 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
         echo "<p><em>No comments yet.</em></p>";
     }
 }
+
 
 // Function to append query parameters to the URL
 function appendQueryParams($url) {
@@ -240,6 +279,12 @@ ob_end_flush();
     <div class="container">
         <div class="container-book">
         <?php
+
+        // Get the book ID from the URL parameters
+$book_id = isset($_GET['book_id']) ? $_GET['book_id'] : '';
+
+// Retrieve the book rating
+$bookRating = getBookRating($book_id);
             // Check if book details are set in the URL
             if (isset($_GET['title'])) {
                 // Output book details
@@ -248,7 +293,9 @@ ob_end_flush();
                 echo "<p><strong>Author:</strong> {$_GET['author']}</p>";
                 echo "<p><strong>Description:</strong> {$_GET['description']}</p>";
                 echo "<p><strong>Publisher:</strong> {$_GET['publisher']}</p>";
-                echo "<p><strong>Rating:</strong></p>";
+                echo "<p><strong>Rating:</strong> ";
+                echo $bookRating;
+                echo "</p>";
                 echo "<div class='button-container'>";
                 echo "<button id='addToList' onclick='openPopup()'>Add to List</button>";
                 echo "<button onclick=\"window.location.href='" . (isset($_GET['url']) ? $_GET['url'] : '') . "'\">Buy Here</button>";
@@ -364,28 +411,35 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('popup').style.display = 'none';
         }
 
-        function toggleReplyBox(commentId) {
-            var isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
-            if (!isLoggedIn) {
-                alert('Please login to reply.');
-                return;
-            }
-            var replyBox = document.getElementById('replyBox_' + commentId);
-            if (replyBox.style.display === 'none' || replyBox.style.display === '') {
-                replyBox.style.display = 'block';
-            } else {
-                replyBox.style.display = 'none';
-            }
+            // Function to toggle the visibility of the reply box
+    function toggleReplyBox(commentId) {
+        var replyBox = document.getElementById('replyBox_' + commentId);
+        if (replyBox.style.display === 'none' || replyBox.style.display === '') {
+            replyBox.style.display = 'block';
+        } else {
+            replyBox.style.display = 'none';
         }
+    }
 
-        function toggleReplies(commentId) {
-            var repliesContainer = document.getElementById('repliesContainer_' + commentId);
-            if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
-                repliesContainer.style.display = 'block';
-            } else {
-                repliesContainer.style.display = 'none';
-            }
+    // Function to toggle the visibility of the replies
+    function toggleReplies(commentId) {
+        var repliesContainer = document.getElementById('repliesContainer_' + commentId);
+        if (repliesContainer.style.display === 'none' || repliesContainer.style.display === '') {
+            repliesContainer.style.display = 'block';
+        } else {
+            repliesContainer.style.display = 'none';
         }
+    }
+
+    // Function to toggle the visibility of the options dropdown
+    function toggleOptions(commentId) {
+        var optionsDropdown = document.getElementById('optionsDropdown_' + commentId);
+        if (optionsDropdown.style.display === 'none' || optionsDropdown.style.display === '') {
+            optionsDropdown.style.display = 'block';
+        } else {
+            optionsDropdown.style.display = 'none';
+        }
+    }
     </script>
 </body>
 </html>
