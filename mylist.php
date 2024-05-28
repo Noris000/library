@@ -106,6 +106,7 @@ ob_end_flush(); // Flush the output buffer and send the output
 <head>
 <link rel="stylesheet" type="text/css" href="mylist.css">
 <script src="random.js"></script>
+
     <title>Book List</title>
 </head>
 <body>

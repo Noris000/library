@@ -31,22 +31,36 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
         while ($row = $result->fetch_assoc()) {
             echo "<div class='comment' style='margin-left: " . ($level * 2) . "em;'>";
             if ($row['deleted'] == 1) {
-                echo "<p>Deleted Comment</p>";
+                echo "<p class='deleted-comment'>Deleted Comment</p>";
+                echo "<p class='timestamp'>{$row['created_at']}</p>";
             } else {
-                echo "<p><strong>{$row['username']}</strong> <em>{$row['created_at']}</em></p>";
-                echo "<p>{$row['review']}</p>";
+                echo "<p class='comment-details'><strong>{$row['username']}</strong> <span class='timestamp'>{$row['created_at']}</span></p>";
+                echo "<p class='comment-text'>{$row['review']}</p>";
+            
+                // Display reply button only if the comment is not deleted
+                echo "<button class='reply-btn' onclick='toggleReplyBox({$row['id']})'>Reply</button>";
             }
-            echo "<button class='reply-btn' onclick='toggleReplyBox({$row['id']})'>Reply</button>";
-
+            
             // Check if there are replies before showing the toggle button
             $replyCheckSql = "SELECT COUNT(*) as reply_count FROM review WHERE reply = '{$row['id']}'";
             $replyCheckResult = $conn->query($replyCheckSql);
             $replyCount = $replyCheckResult->fetch_assoc()['reply_count'];
-
+            
             if ($replyCount > 0) {
                 echo "<button class='toggle-replies-btn' onclick='toggleReplies({$row['id']})'>Replies ({$replyCount})</button>";
             }
-
+            
+            // Display three dots icon and dropdown for edit/delete options
+            if ($row['deleted'] != 1) {
+                echo "<div class='options-container'>";
+                echo "<div class='options-icon' onclick='toggleOptions({$row['id']})'>&#8942;</div>";
+                echo "<div class='options-dropdown' id='optionsDropdown_{$row['id']}' style='display: none;'>";
+                echo "<button class='delete-btn'>Delete</button>";
+                echo "<button class='edit-btn'>Edit</button>";
+                echo "</div>";
+                echo "</div>";
+            }
+            
             // Display delete button only if the comment is not deleted and belongs to the logged-in user
             if ($row['deleted'] != 1 && isset($_SESSION['username']) && $_SESSION['username'] == $row['username']) {
                 echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
@@ -57,12 +71,12 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
                 echo "<input type='hidden' name='author' value='" . htmlspecialchars($_GET['author']) . "'>";
                 echo "<input type='hidden' name='description' value='" . htmlspecialchars($_GET['description']) . "'>";
                 echo "<input type='hidden' name='publisher' value='" . htmlspecialchars($_GET['publisher']) . "'>";
-                echo "<input type='submit' value='Delete'>";
+                echo "<input type='submit' class='delete-btn' value='Delete'>";
                 echo "</form>";
             }
-
-            // Display reply box if the user is logged in
-            if (isset($_SESSION['username'])) {
+            
+            // Display reply box if the user is logged in and the comment is not deleted
+            if ($row['deleted'] != 1 && isset($_SESSION['username'])) {
                 echo "<div class='reply-box' id='replyBox_{$row['id']}' style='display: none;'>";
                 echo "<form action='{$_SERVER["PHP_SELF"]}' method='post'>";
                 echo "<input type='hidden' name='book_id' value='$book_id'>";
@@ -73,20 +87,21 @@ function fetchComments($book_id, $parent_id = NULL, $level = 0, $sort = 'newest'
                 echo "<input type='hidden' name='description' value='" . htmlspecialchars($_GET['description']) . "'>";
                 echo "<input type='hidden' name='publisher' value='" . htmlspecialchars($_GET['publisher']) . "'>";
                 echo "<textarea name='reply' rows='2' cols='30'></textarea><br>";
-                echo "<input type='submit' value='Reply'>";
+                echo "<input type='submit' class='submit-reply-btn' value='Reply'>";
                 echo "</form>";
                 echo "</div>";
-            } else {
+            } elseif (!isset($_SESSION['username'])) {
+                // Display message to login for replying
                 echo "<div class='reply-box' id='replyBox_{$row['id']}' style='display: none;'>";
                 echo "<p>Please login to reply.</p>";
                 echo "</div>";
             }
-
+            
             echo "<div class='replies-container' id='repliesContainer_{$row['id']}' style='display: none;'>";
             // Recursively fetch replies
             fetchComments($book_id, $row['id'], $level + 1, $sort);
             echo "</div>";
-
+            
             echo "</div>";
         }
     } elseif ($parent_id === NULL) {
@@ -178,31 +193,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply'])) {
 
 // Check if the add-to-list form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['status']) && isset($_POST['score'])) {
-    $user_id = $_SESSION['user_id']; // Assuming the user's ID is stored in the session
-    $book_id = $_POST['book_id'];
-    $title = $_POST['title'];
-    $author = $_POST['author'];
-    $rating = $_POST['score'];
-    $status = $_POST['status'];
-
-    // Sanitize inputs to prevent SQL injection
-    $user_id = $conn->real_escape_string($user_id);
-    $book_id = $conn->real_escape_string($book_id);
-    $title = $conn->real_escape_string($title);
-    $author = $conn->real_escape_string($author);
-    $rating = $conn->real_escape_string($rating);
-    $status = $conn->real_escape_string($status);
-
-    // Insert the data into the 'list' table
-    $sql = "INSERT INTO list (user_id, book_id, title, author, rating, status) 
-            VALUES ('$user_id', '$book_id', '$title', '$author', '$rating', '$status')";
-    if ($conn->query($sql) === TRUE) {
-        // Redirect back to the same page to prevent form resubmission
-        header("Location: " . $_SERVER['PHP_SELF'] . "?" . http_build_query($_GET));
-        exit();
+    if (!isset($_SESSION['username'])) {
+        // If the user is not logged in, display a message to login
+        echo "<p>Please login to add the book to your list.</p>";
     } else {
-        // Error inserting data
-        echo "Error: " . $sql . "<br>" . $conn->error;
+        $user_id = $_SESSION['user_id']; // Assuming the user's ID is stored in the session
+        $book_id = $_POST['book_id'];
+        $title = $_POST['title'];
+        $author = $_POST['author'];
+        $rating = $_POST['score'];
+        $status = $_POST['status'];
+
+        // Sanitize inputs to prevent SQL injection
+        $user_id = $conn->real_escape_string($user_id);
+        $book_id = $conn->real_escape_string($book_id);
+        $title = $conn->real_escape_string($title);
+        $author = $conn->real_escape_string($author);
+        $rating = $conn->real_escape_string($rating);
+        $status = $conn->real_escape_string($status);
+
+        // Insert the data into the 'list' table
+        $sql = "INSERT INTO list (user_id, book_id, title, author, rating, status) 
+                VALUES ('$user_id', '$book_id', '$title', '$author', '$rating', '$status')";
+        if ($conn->query($sql) === TRUE) {
+            // Redirect back to the same page to prevent form resubmission
+            header("Location: " . $_SERVER['PHP_SELF'] . "?" . http_build_query($_GET));
+            exit();
+        } else {
+            // Error inserting data
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
     }
 }
 
@@ -228,6 +248,7 @@ ob_end_flush();
                 echo "<p><strong>Author:</strong> {$_GET['author']}</p>";
                 echo "<p><strong>Description:</strong> {$_GET['description']}</p>";
                 echo "<p><strong>Publisher:</strong> {$_GET['publisher']}</p>";
+                echo "<p><strong>Rating:</strong></p>";
                 echo "<div class='button-container'>";
                 echo "<button id='addToList' onclick='openPopup()'>Add to List</button>";
                 echo "<button onclick=\"window.location.href='" . (isset($_GET['url']) ? $_GET['url'] : '') . "'\">Buy Here</button>";
@@ -257,12 +278,16 @@ ob_end_flush();
                 </form>
 
                 <!-- Comments Section -->
-                <div class="comments-container">
-                    <?php
-                    // Fetch main comments
-                    $book_id = isset($_GET['book_id']) ? $_GET['book_id'] : '';
-                    fetchComments($book_id);
-                    ?>
+                <div class="comments-wrapper">
+                    <div class="comments-container">
+                        <?php
+                        // Fetch main comments
+                        $book_id = isset($_GET['book_id']) ? $_GET['book_id'] : '';
+                        fetchComments($book_id);
+                        ?>
+                    </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -301,16 +326,38 @@ ob_end_flush();
             <br><br>
             <div class="button-container">
                 <button type="button" onclick="closePopup()">Cancel</button>
-                <button type="submit">Submit</button>
+                <button type="button" onclick="openPopup()">Submit</button>
             </div>
         </form>
     </div>
 
     <script>
-        function openPopup() {
+
+document.addEventListener('DOMContentLoaded', function() {
+    var optionsIcons = document.querySelectorAll('.options-icon');
+    optionsIcons.forEach(function(optionsIcon) {
+        optionsIcon.addEventListener('click', function() {
+            var commentId = this.dataset.commentId;
+            var optionsDropdown = document.getElementById('optionsDropdown_' + commentId);
+            var deleteButton = optionsDropdown.querySelector('.delete-btn');
+            deleteButton.style.display = (deleteButton.style.display === 'block') ? 'none' : 'block';
+        });
+    });
+});
+
+ // Add a new function to check if the user is logged in before opening the popup
+ function openPopup() {
+        // Check if the user is logged in
+        var isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
+        if (!isLoggedIn) {
+            // If not logged in, display a popup message
+            alert('Please login to add the book to your list.');
+        } else {
+            // If logged in, open the popup
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('popup').style.display = 'block';
         }
+    }
 
         function closePopup() {
             document.getElementById('overlay').style.display = 'none';

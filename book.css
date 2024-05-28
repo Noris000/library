@@ -18,7 +18,7 @@ h2 {
 }
 
 button {
-    background-color: gray;
+    background-color: #333;
     color: #fff;
     padding: 10px 10px;
     border: none;
@@ -82,59 +82,86 @@ a:hover{
 
 .reply-box {
     display: none;
+    margin-top: 10px;
+    max-width: calc(100% - 20px); /* Adjust the value as needed */
+    margin-left: 10px; /* Adjust the margin as needed */
 }
 
-.comments-container {
-    margin-top: 20px;
+.comment-container {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden; /* Prevent comments from extending beyond container */
 }
 
 .comment {
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    padding: 10px;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
+    max-width: calc(100% - 20px); /* Adjusted maximum width to accommodate margin */
+}
+
+.comment .comment {
+    margin-left: 20px;
+    max-width: calc(100% - 60px); /* Adjusted maximum width to accommodate nested margin */
 }
 
 .comment p {
     margin: 0;
+    word-wrap: break-word;
+}
+
+.comment-details {
+    margin: 0;
+}
+
+.comment-text {
+    margin: 0;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.deleted-comment {
+    font-style: italic;
 }
 
 .reply-btn {
-    background-color: #007bff;
+    background-color: #333;
     color: #fff;
     border: none;
     padding: 5px 10px;
     cursor: pointer;
 }
 
-.reply-box {
-    display: none;
-    margin-top: 10px;
-}
-
-.no-comments {
-    margin-top: 20px;
-    font-style: italic;
-}
-
-.button-container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
-
-.button-container button {
-    flex: 1;
-    margin: 0 5px;
-    background-color: gray;
+.toggle-replies-btn {
+    background-color: #333;
     color: #fff;
-    padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    padding: 5px 10px;
     cursor: pointer;
 }
 
-.button-container button:hover {
-    background-color: black;
+.delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.submit-reply-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
 }
 
 .timestamp {
@@ -142,9 +169,15 @@ a:hover{
     color: #888;
 }
 
-.comments-container {
-    max-height: 600px;
-    overflow-y: auto;
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
 }
 
 .popup {
@@ -160,18 +193,56 @@ a:hover{
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-}
-
 .button-container {
     display: flex;
     gap: 10px;
+}
+
+.comments-wrapper {
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.options-container {
+    position: relative;
+    display: inline-block;
+}
+
+.options-icon {
+    font-size: 20px;
+    color: #333;
+    cursor: pointer;
+}
+
+.options-dropdown {
+    display: none;
+    position: absolute;
+    top: 20px;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+}
+
+.options-dropdown button {
+    display: block;
+    width: 100%;
+    padding: 5px 10px;
+    margin: 5px 0;
+    border: none;
+    background-color: transparent;
+    color: #333;
+    cursor: pointer;
+}
+
+.options-container:hover .options-dropdown {
+    display: block;
+}
+
+img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
