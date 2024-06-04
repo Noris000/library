@@ -102,28 +102,41 @@ ob_end_flush(); // Flush the output buffer and send the output
 ?>
 
 <!DOCTYPE html>
-<html>
+<html style="background-color: peachpuff;">
 <head>
 <link rel="stylesheet" type="text/css" href="mylist.css">
 <script src="random.js"></script>
-
     <title>Book List</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
+        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+        <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.4.1/css/rowReorder.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/rowreorder/1.4.1/js/dataTables.rowReorder.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
 </head>
-<body>
+<body style="background-color: peachpuff;">
 
 <h2>Book List</h2>
 <div class='container-table'>
 <?php if (isListEmpty()): ?>
     <p>The book list is empty. Please add a book.</p>
 <?php else: ?>
-    <table>
-        <tr>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Rating</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
+    <table id="books_list" class="display nowrap" style="width:100%">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Rating</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
         <?php
         // Fetch the book list
         $result = fetchBookList();
@@ -135,9 +148,9 @@ ob_end_flush(); // Flush the output buffer and send the output
                 echo "<td>{$row['rating']}</td>";
                 echo "<td>{$row['status']}</td>";
                 echo "<td>
-                        <button class='btn remove' onclick='removeBook({$row['id']})'>Remove</button>
-                        <button class='btn edit' onclick='openEditPopup({$row['id']}, \"{$row['rating']}\", \"{$row['status']}\")'>Edit</button>
-                      </td>";
+                    <button style='background: #333; color: white; transition: background-color 0.3s;' onclick='removeBook({$row['id']})' onmouseover=\"this.style.backgroundColor='#555'\" onmouseout=\"this.style.backgroundColor='#333'\">Remove</button>
+                    <button style='background: #333; color: white; transition: background-color 0.3s;' onclick='openEditPopup({$row['id']}, \"{$row['rating']}\", \"{$row['status']}\")' onmouseover=\"this.style.backgroundColor='#555'\" onmouseout=\"this.style.backgroundColor='#333'\">Edit</button>
+                    </td>";
                 echo "</tr>";
             }
         }
@@ -177,12 +190,20 @@ ob_end_flush(); // Flush the output buffer and send the output
         <br><br>
         <div class="button-container">
             <button type="button" onclick="closeEditPopup()">Cancel</button>
-            <button type="submit" name="edit_book">Submit</button>
+            <button type="submit" name="edit_book">Edit</button>
         </div>
     </form>
 </div>
 
 <script>
+
+new DataTable('#books_list', {
+    responsive: true,
+    rowReorder: {
+        selector: 'td:nth-child(2)'
+    }
+});
+
     // JavaScript function to display messages as popups
     function showMessage(message) {
         alert(message);
@@ -213,6 +234,22 @@ ob_end_flush(); // Flush the output buffer and send the output
     function closeEditPopup() {
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('editPopup').style.display = 'none';
+    }
+
+    function openEditPopup(bookId, rating, status) {
+    document.getElementById('overlay').style.display = 'block';
+    document.getElementById('editPopup').style.display = 'block';
+    document.getElementById('editBookId').value = bookId;
+    document.getElementById('editScore').value = rating;
+    
+    // Set the status dropdown to the current status
+    const statusDropdown = document.getElementById('editStatus');
+    for (let i = 0; i < statusDropdown.options.length; i++) {
+        if (statusDropdown.options[i].value === status) {
+            statusDropdown.selectedIndex = i;
+            break;
+        }
+    }
     }
 </script>
 

@@ -1,4 +1,5 @@
 <?php
+// Include database connection file
 include 'db.php';
 
 // Start session
@@ -190,34 +191,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
         }
     </script>
 </head>
-<body onload="restoreScrollPosition()">
-
-<div class="menu-icon" onclick="toggleMenu()">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-        <path fill="white" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
-    </svg>
-</div>
-
+<body>
 <nav class="navbar">
-    <ul class="nav-list">
-        <li class="nav-item"><a href="index.php">Home</a></li>
-        <li class="nav-item"><a onclick="fetchRandomBook()">Random Book</a></li>
-        <li class="nav-item"><a onclick="redirectToReviews()">Reviews</a></li>
-        <li class="nav-item"><a onclick="redirectToRatings()">Ratings</a></li>
-        <?php if (isset($_SESSION['user_id'])) : ?>
-            <li class="nav-item"><a href="mylist.php">My List</a></li>
-            <li class="nav-item"><a href="account.php">My Account</a></li>
-        <?php endif; ?>
-    </ul>
-    <div class="user-profile">
-        <?php if (isset($_SESSION['user_id'])) : ?>
-            <a href="logout.php" class="a">Logout</a>
-        <?php else : ?>
-            <a href="#" onclick="showLoginModal()" class="a">Login</a>
-        <?php endif; ?>
+    <a class="logo" href="index.php">Virtue Verse</a>
+    <input type="checkbox" id="toggler">
+    <label for="toggler" class="hamburger-icon">
+        <svg class="hamburger-svg" viewBox="0 0 24 24" width="24" height="24">
+            <path d="M3 6h18M3 12h18M3 18h18" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </label>
+    <div class="menu">
+        <ul class="list">
+            <li style='color: white;'><a onclick="fetchRandomBook()">Random Book</a></li>
+            <?php if (isset($_SESSION['user_id'])) : ?>
+                <li><a href="mylist.php">My List</a></li>
+                <li><a href="account.php">My Account</a></li>
+                <li><a href="logout.php">Logout</a></li>
+            <?php else : ?>
+                <li><a href="#" onclick="showLoginModal()">Login</a></li>
+            <?php endif; ?>
+        </ul>
     </div>
 </nav>
-
 <!-- Login Modal -->
 <div id="loginModal" class="modal-container" style="display: none;">
     <div class="modal-content">
@@ -254,37 +249,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
         <form action="" method="post" onsubmit="storeScrollPosition()">
             <div class="form-group">
                 <input type="email" name="email" class="form-control" placeholder="Email" required>
-                <span class="icon" onclick="showEmailSuggestions()">🛈</span>
-                <div class="suggestions-container" id="emailSuggestions">
-                    <ul>
-                        <li>Should be in a valid email format (e.g., example@example.com).</li>
-                    </ul>
-                </div>
                 <span class="error-message"><?php if (!empty($emailError)) echo $emailError; ?></span>
             </div>
             <div class="form-group">
                 <input type="text" name="username" class="form-control" placeholder="Username" required>
-                <span class="icon" onclick="showUsernameSuggestions()">🛈</span>
-                <div class="suggestions-container" id="usernameSuggestions">
-                    <ul>
-                        <li>Length requirements: min 6 max 18.</li>
-                        <li>No special symbols (e.g., !, @, #, $, %, etc.).</li>
-                        <li>No spaces at the beginning or end.</li>
-                        <li>Allow certain special characters like dots (.) or underscores (_), but not at the beginning or end.</li>
-                    </ul>
-                </div>
                 <span class="error-message"><?php if (!empty($usernameError)) echo $usernameError; ?></span>
             </div>
             <div class="form-group">
                 <input type="password" name="password" class="form-control" placeholder="Password" required>
-                <span class="icon" onclick="showPasswordSuggestions()">🛈</span>
-                <div class="suggestions-container" id="passwordSuggestions">
-                    <ul>
-                        <li>Minimum length at least 8 characters.</li>
-                        <li>Must contain uppercase and lowercase letters, numbers, and special characters.</li>
-                        <li>Maximum length 20.</li>
-                    </ul>
-                </div>
                 <span class="error-message"><?php if (!empty($passwordError)) echo $passwordError; ?></span>
             </div>
             <div class="form-group">
@@ -296,10 +268,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
 </div>
 
 <script>
-    function toggleMenu() {
-        var navList = document.querySelector('.nav-list');
-        navList.classList.toggle('active');
-    }
 
     async function fetchRandomBook() {
         const options = {
@@ -321,14 +289,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
         }
     }
 
-    function redirectToReviews() {
-        window.location.href = "reviews.php";
-    }
-
-    function redirectToRatings() {
-        window.location.href = "ratings.php";
-    }
-
     function showLoginModal() {
         document.getElementById('registerModal').style.display = 'none';
         document.getElementById('loginModal').style.display = 'block';
@@ -341,21 +301,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
 
     function closeModal(modalId) {
         document.getElementById(modalId).style.display = 'none';
-    }
-
-    function showUsernameSuggestions() {
-        var suggestionsContainer = document.getElementById('usernameSuggestions');
-        suggestionsContainer.classList.toggle('active');
-    }
-
-    function showPasswordSuggestions() {
-        var suggestionsContainer = document.getElementById('passwordSuggestions');
-        suggestionsContainer.classList.toggle('active');
-    }
-
-    function showEmailSuggestions() {
-        var suggestionsContainer = document.getElementById('emailSuggestions');
-        suggestionsContainer.classList.toggle('active');
     }
 
     window.onload = function() {

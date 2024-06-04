@@ -21,13 +21,13 @@ th, td {
     padding: 8px;
     text-align: left;
     background-color: white;
-    text-align: center;
+
 }
 
 th {
     color: white;
     background-color: #333;
-    text-align: center;
+
 }
 
 tr:hover td {
@@ -52,13 +52,16 @@ select {
 }
 
 .container-table {
-    width: fit-content;
-    margin: auto;
+    max-width: 1200px;
+    margin-right: auto;
+    margin-left: auto;
 }
+
 
 p {
     font-size: 30px;
     color: #333;
+    text-align: center;
 }
 
 .button-container button {
@@ -70,27 +73,11 @@ p {
     border-radius: 5px;
 }
 
-.button-container button:hover {
+.button-container button :hover {
     background-color: #ccc;
     color: #333;
 }
 
-.btn {
-    background-color: #333;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 3px;
-    margin-right: 5px;
-}
-
-.btn:hover {
-    background-color: #ccc;
-    color: #333;
-}
-
-/* Pop-up Modal for Add to List */
 .overlay {
     position: fixed;
     top: 0;
@@ -112,6 +99,7 @@ p {
     border-radius: 5px;
     display: none;
     z-index: 1001;
+    width: 300px;
 }
 
 .popup h2 {
@@ -129,11 +117,9 @@ p {
 }
 
 .popup .button-container {
-    text-align: right;
-    margin-top: 10px;
+    text-align: center;
 }
 
-/* Pop-up Text for Add to List when user is not logged in */
 .popup-text {
     position: fixed;
     top: 50%;

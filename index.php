@@ -66,25 +66,27 @@ include 'navbar.php';
             } catch (error) {
                 console.error(error);
                 displayErrorMessage("The API is down.", "Please try again later.");
-                return null; // Return null if there's an error
+                return null;
             }
         }
 
         function appendCard(book) {
             const cardContainer = document.getElementById('cardContainer');
-            if (!cardContainer) return; // Check if cardContainer exists
+            if (!cardContainer) return;
 
             const card = document.createElement('div');
             card.className = 'card';
 
+            // Use custom placeholder image if book image is missing
+            const imageUrl = book.bookImage ? book.bookImage : 'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png';
+
             card.innerHTML = `
-                <img src="${book.bookImage}" alt="Book Cover">
+                <img src="${imageUrl}" alt="Book Cover">
                 <div class="card-body">
                     <h2 class="card-title">${book.bookTitle}</h2>
                     <p class="card-text"><strong>Author:</strong> ${book.bookAuthor}</p>
                     <p class="card-text">${book.bookDescription}</p>
                     <p class="card-text"><strong>Publisher:</strong> ${book.bookPublisher}</p>
-                    <a href="${book.amazonBookUrl}" class="btn btn-primary">Buy on Amazon</a>
                 </div>
             `;
 
@@ -112,6 +114,7 @@ include 'navbar.php';
             loadingContainer.innerHTML = `<div class="error-message-container"><p class="error-message">${message}</p><p class="error-message-subtext">${subtext}</p></div>`;
         }
 
+        // Initial load
         document.addEventListener('DOMContentLoaded', async () => {
             const bookData = await fetchBookData();
             const cardContainer = document.getElementById('cardContainer');
@@ -120,13 +123,19 @@ include 'navbar.php';
 
             if (!bookData || bookData.length === 0) {
                 displayErrorMessage("The API is down.", "Please try again later.");
+                cardContainer.style.display = 'block';
             } else {
-                bookData.forEach(book => {
+                // Filter out duplicate books based on ISBN
+                const uniqueBooks = Array.from(new Map(bookData.map(book => [book.bookIsbn, book])).values());
+
+                // Append cards
+                uniqueBooks.forEach(book => {
                     appendCard(book);
                 });
-                loadingContainer.style.display = 'none'; // Hide spinner
-                cardContainer.style.display = 'block'; // Show card container
-                libraryTitle.classList.remove('hidden'); // Show the library title
+
+                loadingContainer.style.display = 'none';
+                cardContainer.style.display = 'flex';
+                libraryTitle.classList.remove('hidden');
             }
         });
     </script>
