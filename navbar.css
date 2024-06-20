@@ -7,6 +7,7 @@
     background-color: #333;
     box-shadow: 4px 5px 6px rgba(0, 0, 0, 0.1);
     z-index: 100;
+    font-size: 20px;
 }
 
 .navbar a {
@@ -37,10 +38,12 @@
     transition: background-color 0.3s ease;
     display: flex;
     justify-content: center;
+    cursor: pointer;
 }
 
 .list li:hover {
     background-color: #555;
+    cursor: pointer;
 }
 
 #toggler {

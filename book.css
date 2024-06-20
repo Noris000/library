@@ -1,3 +1,20 @@
+.custom-alert {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 5px;
+    z-index: 1000;
+    width: 50%;
+    max-width: 400px;
+    text-align: center;
+    margin-top: 20px;
+    border: solid 1px peachpuff;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -12,6 +29,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    font-size: 20px;
 }
 
 .container-book,

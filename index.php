@@ -1,6 +1,60 @@
 <?php
 include 'db.php';
 include 'navbar.php';
+
+function fetchAndStoreBookData($dbConnection) {
+    $apiUrl = 'https://all-books-api.p.rapidapi.com/getBooks';
+    $options = [
+        'http' => [
+            'method' => 'GET',
+            'header' => [
+                'X-RapidAPI-Key: 7ce71ed5a7msha4203985a4cda5bp174b0ajsnb14b7bd8b868',
+                'X-RapidAPI-Host: all-books-api.p.rapidapi.com'
+            ]
+        ]
+    ];
+    $context = stream_context_create($options);
+    
+    $response = @file_get_contents($apiUrl, false, $context);
+    
+    if ($response === false) {
+        return;
+    }
+
+    $bookData = json_decode($response, true);
+
+    if (!$bookData) {
+        return;
+    }
+
+    foreach ($bookData as $book) {
+        $isbn = mysqli_real_escape_string($dbConnection, $book['bookIsbn']);
+        $title = mysqli_real_escape_string($dbConnection, $book['bookTitle']);
+        $author = mysqli_real_escape_string($dbConnection, $book['bookAuthor']);
+        $publisher = mysqli_real_escape_string($dbConnection, $book['bookPublisher']);
+        $description = mysqli_real_escape_string($dbConnection, $book['bookDescription']);
+        $url = mysqli_real_escape_string($dbConnection, $book['amazonBookUrl']);
+        $cover = mysqli_real_escape_string($dbConnection, $book['bookImage']);
+
+        $checkQuery = "SELECT * FROM books 
+                    WHERE isbn = '$isbn'
+                    AND title = '$title'
+                    AND author = '$author'
+                    AND publisher = '$publisher'
+                    AND description = '$description'
+                    AND url = '$url'
+                    AND cover = '$cover'";
+        $checkResult = mysqli_query($dbConnection, $checkQuery);
+
+        if (mysqli_num_rows($checkResult) == 0) {
+            $insertQuery = "INSERT INTO books (isbn, title, author, publisher, description, url, cover) 
+                            VALUES ('$isbn', '$title', '$author', '$publisher', '$description', '$url', '$cover')";
+            mysqli_query($dbConnection, $insertQuery);
+        }
+    }
+}
+
+fetchAndStoreBookData($conn);
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +73,6 @@ include 'navbar.php';
 
     <script>
         async function fetchRandomBook() {
-            // Fetch all book data
             const bookData = await fetchBookData();
 
             if (!bookData || bookData.length === 0) {
@@ -27,11 +80,9 @@ include 'navbar.php';
                 return;
             }
 
-            // Randomly select a book from the fetched data
             const randomIndex = Math.floor(Math.random() * bookData.length);
             const randomBook = bookData[randomIndex];
 
-            // Redirect to book.php with the random book's details as query parameters
             const queryString = new URLSearchParams({
                 title: randomBook.bookTitle,
                 cover: randomBook.bookImage,
@@ -58,7 +109,7 @@ include 'navbar.php';
                 const response = await fetch(url, options);
 
                 if (!response.ok) {
-                    throw new Error(`Failed to load resource: the server responded with a status of ${response.status} ()`);
+                    throw new Error(`Failed to load resource: the server responded with a status of ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -77,7 +128,6 @@ include 'navbar.php';
             const card = document.createElement('div');
             card.className = 'card';
 
-            // Use custom placeholder image if book image is missing
             const imageUrl = book.bookImage ? book.bookImage : 'https://bookstoreromanceday.org/wp-content/uploads/2020/08/book-cover-placeholder.png';
 
             card.innerHTML = `
@@ -92,7 +142,6 @@ include 'navbar.php';
 
             cardContainer.appendChild(card);
 
-            // Add click event listener
             card.addEventListener('click', () => handleBookClick(book));
         }
 
@@ -112,9 +161,10 @@ include 'navbar.php';
         function displayErrorMessage(message, subtext) {
             const loadingContainer = document.getElementById('loadingContainer');
             loadingContainer.innerHTML = `<div class="error-message-container"><p class="error-message">${message}</p><p class="error-message-subtext">${subtext}</p></div>`;
+            document.getElementById('cardContainer').style.display = 'none';
+            document.getElementById('libraryTitle').classList.add('hidden');
         }
 
-        // Initial load
         document.addEventListener('DOMContentLoaded', async () => {
             const bookData = await fetchBookData();
             const cardContainer = document.getElementById('cardContainer');
@@ -123,12 +173,9 @@ include 'navbar.php';
 
             if (!bookData || bookData.length === 0) {
                 displayErrorMessage("The API is down.", "Please try again later.");
-                cardContainer.style.display = 'block';
             } else {
-                // Filter out duplicate books based on ISBN
                 const uniqueBooks = Array.from(new Map(bookData.map(book => [book.bookIsbn, book])).values());
 
-                // Append cards
                 uniqueBooks.forEach(book => {
                     appendCard(book);
                 });

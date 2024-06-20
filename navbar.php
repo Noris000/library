@@ -21,9 +21,14 @@ unset($_SESSION['emailError']);
 unset($_SESSION['usernameError']);
 unset($_SESSION['passwordError']);
 
-// Store current URL in session before redirecting to login page
+// Store current URL and scroll position in session before redirecting to login page
 if ($_SERVER["REQUEST_METHOD"] == "GET" && !isset($_SESSION['user_id'])) {
     $_SESSION['return_to'] = $_SERVER['REQUEST_URI'];
+    $_SESSION['scroll_position'] = isset($_SESSION['scroll_position']) ? $_SESSION['scroll_position'] : 0;
+    // Store book ID if applicable
+    if (isset($_GET['book_id'])) {
+        $_SESSION['book_id'] = $_GET['book_id'];
+    }
 }
 
 // Handle user login only if form is submitted
@@ -66,8 +71,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login_submit'])) {
                         // Redirect user back to the previous page if available
                         if (isset($_SESSION['return_to'])) {
                             $return_to = $_SESSION['return_to'];
+                            $scroll_position = isset($_SESSION['scroll_position']) ? $_SESSION['scroll_position'] : 0;
                             unset($_SESSION['return_to']);
-                            header("location: $return_to");
+                            unset($_SESSION['scroll_position']);
+                            // Redirect to the correct page with scroll position
+                            header("location: $return_to#scroll=$scroll_position");
                             exit();
                         } else {
                             // Redirect user to index page
@@ -194,6 +202,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
 <body>
 <nav class="navbar">
     <a class="logo" href="index.php">Virtue Verse</a>
+        <div id="clock-container">
+            <div id="clock"></div>
+        </div>
     <input type="checkbox" id="toggler">
     <label for="toggler" class="hamburger-icon">
         <svg class="hamburger-svg" viewBox="0 0 24 24" width="24" height="24">
@@ -312,6 +323,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register_submit'])) {
         <?php endif; ?>
     };
 </script>
-
 </body>
 </html>

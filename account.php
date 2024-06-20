@@ -9,7 +9,6 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Include navbar
 include 'navbar.php';
 
 $userID = $_SESSION['user_id'];
@@ -61,20 +60,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     } elseif ($updateSection == "update_password") {
         // Handle password update
-        $currentPassword = $_POST["current_password"];
-        $newPassword = $_POST["new_password"];
-        $confirmPassword = $_POST["confirm_password"];
+        $currentPassword = isset($_POST["current_password"]) ? $_POST["current_password"] : '';
+        $newPassword = isset($_POST["new_password"]) ? $_POST["new_password"] : '';
+        $confirmPassword = isset($_POST["confirm_password"]) ? $_POST["confirm_password"] : '';
 
         // Validate current password
-        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
-            $errors["password"] = "Password fields cannot be empty";
-        } elseif (!password_verify($currentPassword, $user["password"])) {
-            $errors["password"] = "Current password is incorrect";
-        } elseif (strlen($newPassword) < 8) {
-            $errors["new_password"] = "Password must be at least 8 characters long and only contain letters and numbers.";
-        } elseif ($newPassword !== $confirmPassword) {
-            $errors["confirm_password"] = "Passwords do not match";
-        } else {
+        if (empty($currentPassword)) {
+            $errors["current_password"] = "Current password cannot be empty";
+        }
+        if (empty($newPassword)) {
+            $errors["new_password"] = "New password cannot be empty";
+        }
+        if (empty($confirmPassword)) {
+            $errors["confirm_password"] = "Confirm password cannot be empty";
+        }
+
+        if (empty($errors)) {
+            if (!password_verify($currentPassword, $user["password"])) {
+                $errors["current_password"] = "Current password is incorrect";
+            }
+            if (strlen($newPassword) < 8) {
+                $errors["new_password"] = "Password must be at least 8 characters long and only contain letters and numbers.";
+            }
+            if ($newPassword !== $confirmPassword) {
+                $errors["confirm_password"] = "Passwords do not match";
+            }
+        }
+
+        if (empty($errors)) {
             // Hash the new password and update it in the database
             $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
             $updateSql = "UPDATE user SET password = ? WHERE id = ?";
@@ -143,8 +156,8 @@ ob_end_flush();
             <h2 class="section-title">Password Change</h2>
             <label for="current_password"><strong>Current Password:</strong></label>
             <input type="password" id="current_password" name="current_password">
-            <?php if (isset($errors["password"])): ?>
-                <p class="error"><?php echo $errors["password"]; ?></p>
+            <?php if (isset($errors["current_password"])): ?>
+                <p class="error"><?php echo $errors["current_password"]; ?></p>
             <?php endif; ?>
 
             <label for="new_password"><strong>New Password:</strong></label>

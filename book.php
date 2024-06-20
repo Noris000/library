@@ -232,18 +232,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_comment'])) {
             // Error updating comment
             echo "Error: " . $sql . "<br>" . $conn->error;
         }
-    } else {
-        // If the user doesn't exist, display an error message or handle the situation accordingly
-        echo "User does not exist in the database.";
-    }
+}
+}
+
+// Function to sanitize input data
+function sanitizeInput($data) {
+    // Remove HTML tags and encode special characters
+    return htmlspecialchars(strip_tags($data));
 }
 
 // Check if the review form is submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['review'])) {
     // Process review submission
-    $username = $_POST['username'];// Check if the add-to-list form is submitted// Check if the add-to-list form is submitted
-    $book_id = $_POST['book_id'];
-    $review = $_POST['review'];
+    $username = sanitizeInput($_POST['username']);
+    $book_id = sanitizeInput($_POST['book_id']);
+    $review = sanitizeInput($_POST['review']);
 
     // Sanitize input to prevent SQL injection
     $username = $conn->real_escape_string($username);
@@ -513,39 +516,50 @@ document.addEventListener('DOMContentLoaded', function() {
             deleteButton.style.display = (deleteButton.style.display === 'block') ? 'none' : 'block';
         });
 
-function openPopup() {
-        var isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
-        if (!isLoggedIn) {
-            alert('Please login to add the book to your list.');
-        } else {
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('popup').style.display = 'block';
-        }
-    }
-
-    function closePopup() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('popup').style.display = 'none';
-    }
-
-        function toggleReplyBox(commentId, username) {
+        function openPopup() {
     var isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
     if (!isLoggedIn) {
-        alert('Please login to reply.');
-        return;
-    }
-    var replyBox = document.getElementById('replyBox_' + commentId);
-    if (replyBox.style.display === 'none' || replyBox.style.display === '') {
-        replyBox.style.display = 'block';
-        // Automatically include the name of the user whose comment is being replied to
-        var replyTextarea = replyBox.querySelector('textarea');
-        replyTextarea.value = '@' + username;
-        replyTextarea.focus();
+        displayCustomAlert('Please login to add the book to your list.');
     } else {
-        replyBox.style.display = 'none';
-document.getElementById('popup').style.display = 'none';
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('popup').style.display = 'block';
+    }
 }
+
+function closePopup() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('popup').style.display = 'none';
+}
+        function toggleReplyBox(commentId, username) {
+            var isLoggedIn = <?php echo isset($_SESSION['username']) ? 'true' : 'false'; ?>;
+            if (!isLoggedIn) {
+                displayCustomAlert('Please login to reply.');
+                return;
+            }
+            
+            var replyBox = document.getElementById('replyBox_' + commentId);
+            if (replyBox.style.display === 'none' || replyBox.style.display === '') {
+                replyBox.style.display = 'block';
+                // Automatically include the name of the user whose comment is being replied to
+                var replyTextarea = replyBox.querySelector('textarea');
+                replyTextarea.value = '@' + username;
+                replyTextarea.focus();
+            } else {
+                replyBox.style.display = 'none';
+                document.getElementById('popup').style.display = 'none';
+            }
         }
+
+        function displayCustomAlert(message) {
+    var alertContainer = document.createElement('div');
+    alertContainer.classList.add('custom-alert');
+    alertContainer.textContent = message;
+    var containerDiv = document.querySelector('.container');
+    document.body.insertBefore(alertContainer, containerDiv);
+    setTimeout(function() {
+        alertContainer.remove();
+    }, 3000); // Remove alert after 3 seconds
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     var deleteForms = document.querySelectorAll('.delete-form');
@@ -567,6 +581,7 @@ function toggleReplies(commentId) {
 </body>
 </html>
 <?php
+
 // Flush the output buffer and turn off output buffering
 ob_end_flush();
 ?>

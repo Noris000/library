@@ -7,6 +7,7 @@ body {
     background-color: peachpuff;
     background-size: contain;
     background-repeat: no-repeat;
+    font-size: 20px;
 }
 
 table {
@@ -36,7 +37,7 @@ tr:hover td {
 }
 
 h2 {
-    font-size: 36px;
+    font-size: 30px;
     margin-top: 20px;
     margin-bottom: 20px;
     text-align: center;
@@ -59,7 +60,7 @@ select {
 
 
 p {
-    font-size: 30px;
+    font-size: 24px;
     color: #333;
     text-align: center;
 }
@@ -71,6 +72,7 @@ p {
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 5px;
+    width: 100%;
 }
 
 .button-container button :hover {
@@ -89,7 +91,7 @@ p {
     z-index: 1000;
 }
 
-.popup {
+.popup, .popup-text {
     position: fixed;
     top: 50%;
     left: 50%;
@@ -102,13 +104,14 @@ p {
     width: 300px;
 }
 
-.popup h2 {
+.popup h2, .popup-text h2 {
     color: #333;
 }
 
-.popup form label {
+.popup form label, .popup-text p {
     display: block;
     margin-top: 10px;
+    color: #333;
 }
 
 .popup form select {
@@ -116,32 +119,10 @@ p {
     margin-top: 5px;
 }
 
-.popup .button-container {
+.popup .button-container, .popup-text .button-container {
     text-align: center;
-}
-
-.popup-text {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    padding: 20px;
-    border-radius: 5px;
-    display: none;
-    z-index: 1001;
-}
-
-.popup-text h2 {
-    color: #333;
-}
-
-.popup-text p {
+    display: flex;
     margin-top: 10px;
-    color: #333;
-}
-
-.popup-text .button-container {
-    text-align: right;
-    margin-top: 10px;
+    gap: 10px;
+    justify-content: center;
 }

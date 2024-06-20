@@ -4,14 +4,11 @@ session_start();
 
 // Check if the user is not logged in
 if (!isset($_SESSION['username'])) {
-    // Redirect the user to the index.php page
     header("Location: index.php");
-    exit(); // Stop further execution
+    exit();
 }
 
 include 'navbar.php';
-
-// Assuming you have a database connection in 'db.php'
 include 'db.php';
 
 // Function to remove a book from the list table
@@ -45,7 +42,6 @@ function updateBookDetails($bookId, $rating, $status) {
     $sql = "UPDATE list SET rating = '$rating', status = '$status' WHERE id = $bookId";
 
     if ($conn->query($sql) === TRUE) {
-        // Redirect back to mylist.php after successful update
         header("Location: mylist.php");
         exit();
     } else {
@@ -108,11 +104,9 @@ ob_end_flush(); // Flush the output buffer and send the output
 <script src="random.js"></script>
     <title>Book List</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-        <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"> -->
-        <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-        <!-- <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script> -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/rowreorder/1.4.1/css/rowReorder.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
@@ -148,7 +142,7 @@ ob_end_flush(); // Flush the output buffer and send the output
                 echo "<td>{$row['rating']}</td>";
                 echo "<td>{$row['status']}</td>";
                 echo "<td>
-                    <button style='background: #333; color: white; transition: background-color 0.3s;' onclick='removeBook({$row['id']})' onmouseover=\"this.style.backgroundColor='#555'\" onmouseout=\"this.style.backgroundColor='#333'\">Remove</button>
+                    <button style='background: #333; color: white; transition: background-color 0.3s;' onclick='showDeletePopup({$row['id']})' onmouseover=\"this.style.backgroundColor='#555'\" onmouseout=\"this.style.backgroundColor='#333'\">Remove</button>
                     <button style='background: #333; color: white; transition: background-color 0.3s;' onclick='openEditPopup({$row['id']}, \"{$row['rating']}\", \"{$row['status']}\")' onmouseover=\"this.style.backgroundColor='#555'\" onmouseout=\"this.style.backgroundColor='#333'\">Edit</button>
                     </td>";
                 echo "</tr>";
@@ -196,7 +190,6 @@ ob_end_flush(); // Flush the output buffer and send the output
 </div>
 
 <script>
-
 new DataTable('#books_list', {
     responsive: true,
     rowReorder: {
@@ -204,39 +197,44 @@ new DataTable('#books_list', {
     }
 });
 
-    // JavaScript function to display messages as popups
-    function showMessage(message) {
-        alert(message);
-    }
+// JavaScript function to display messages as popups
+function showMessage(message) {
+    alert(message);
+}
 
-    function removeBook(bookId) {
-        if (confirm("Are you sure you want to remove this book?")) {
-            window.location.href = `mylist.php?remove=${bookId}`;
-        }
-    }
+function showDeletePopup(bookId) {
+    const overlay = document.getElementById('overlay');
+    const popup = document.createElement('div');
+    popup.classList.add('popup-text');
+    
+    popup.innerHTML = `
+        <h2>Confirm Deletion</h2>
+        <p>Are you sure you want to delete this book?</p>
+        <div class="button-container">
+            <button onclick="confirmDeletion(${bookId})">Yes</button>
+            <button onclick="closeDeletePopup()">No</button>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    overlay.style.display = 'block';
+    popup.style.display = 'block';
+}
 
-    function openEditPopup(bookId, rating, status) {
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('editPopup').style.display = 'block';
-        document.getElementById('editBookId').value = bookId;
-        document.getElementById('editScore').value = rating;
-        
-        // Set the status dropdown to the current status
-        const statusDropdown = document.getElementById('editStatus');
-        for (let i = 0; i < statusDropdown.options.length; i++) {
-            if (statusDropdown.options[i].value === status) {
-                statusDropdown.selectedIndex = i;
-                break;
-            }
-        }
+function closeDeletePopup() {
+    const overlay = document.getElementById('overlay');
+    const popup = document.querySelector('.popup-text');
+    overlay.style.display = 'none';
+    if (popup) {
+        document.body.removeChild(popup);
     }
+}
 
-    function closeEditPopup() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('editPopup').style.display = 'none';
-    }
+function confirmDeletion(bookId) {
+    window.location.href = `mylist.php?remove=${bookId}`;
+}
 
-    function openEditPopup(bookId, rating, status) {
+function openEditPopup(bookId, rating, status) {
     document.getElementById('overlay').style.display = 'block';
     document.getElementById('editPopup').style.display = 'block';
     document.getElementById('editBookId').value = bookId;
@@ -250,7 +248,12 @@ new DataTable('#books_list', {
             break;
         }
     }
-    }
+}
+
+function closeEditPopup() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('editPopup').style.display = 'none';
+}
 </script>
 
 </body>
